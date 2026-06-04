@@ -1,0 +1,56 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Stream {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+  students Student[]
+  subjects Subject[] @relation("StreamSubjects")
+
+  @@map("streams")
+}
+
+model Subject {
+  id          Int          @id @default(autoincrement())
+  name        String
+  code        String       @unique
+  streams     Stream[]     @relation("StreamSubjects")
+  assessments Assessment[]
+
+  @@map("subjects")
+}
+
+model Student {
+  id               Int          @id @default(autoincrement())
+  admission_number String       @unique
+  first_name       String
+  last_name        String
+  stream_id        Int
+  stream           Stream       @relation(fields: [stream_id], references: [id], onDelete: Restrict)
+  assessments      Assessment[]
+
+  @@map("students")
+}
+
+model Assessment {
+  id          Int     @id @default(autoincrement())
+  student_id  Int
+  subject_id  Int
+  ca_score    Int
+  exam_score  Int
+  total_score Int
+  grade       String
+  remarks     String
+  term        String
+  student     Student @relation(fields: [student_id], references: [id], onDelete: Cascade)
+  subject     Subject @relation(fields: [subject_id], references: [id], onDelete: Restrict)
+
+  @@unique([student_id, subject_id, term])
+  @@map("assessments")
+}
