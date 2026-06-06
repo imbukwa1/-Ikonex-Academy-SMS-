@@ -113,6 +113,10 @@ export const scoresApi = {
 };
 
 export const resultsApi = {
+  terms: async () => {
+    const { data } = await apiClient.get<string[]>("/results/terms");
+    return data;
+  },
   subjectStream: async (subjectId: number, streamId: number, term?: string) => {
     const { data } = await apiClient.get<SubjectStreamResults>(
       `/results/subject/${subjectId}/stream/${streamId}`,

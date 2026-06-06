@@ -3,6 +3,7 @@ import {
   calculateClassPerformance,
   calculateStudentResults,
   calculateSubjectStreamResults,
+  listAssessmentTerms,
 } from "../services/results.service";
 import { AppError } from "../utils/AppError";
 
@@ -62,6 +63,15 @@ export const getClassPerformance: RequestHandler = async (req, res, next) => {
 
     const results = await calculateClassPerformance(streamId, term);
     res.json(results);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getAssessmentTerms: RequestHandler = async (_req, res, next) => {
+  try {
+    const terms = await listAssessmentTerms();
+    res.json(terms);
   } catch (error) {
     next(error);
   }

@@ -282,6 +282,16 @@ export async function calculateClassPerformance(streamId: number, term: string) 
   };
 }
 
+export async function listAssessmentTerms() {
+  const terms = await prisma.assessment.findMany({
+    distinct: ["term"],
+    select: { term: true },
+    orderBy: { term: "asc" },
+  });
+
+  return terms.map((item) => item.term);
+}
+
 export async function calculateStudentResults(studentId: number, term: string) {
   const student = await prisma.student.findUnique({
     where: { id: studentId },

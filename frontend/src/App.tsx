@@ -1,7 +1,11 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { AppLayout } from "./components/layout/AppLayout";
+import { AcademicRecordsPage } from "./pages/AcademicRecordsPage";
 import { DashboardPage } from "./pages/DashboardPage";
-import { PlaceholderPage } from "./pages/PlaceholderPage";
+import { ReportsPage } from "./pages/ReportsPage";
+import { StreamsPage } from "./pages/StreamsPage";
+import { StudentsPage } from "./pages/StudentsPage";
+import { SubjectsPage } from "./pages/SubjectsPage";
 
 export function App() {
   return (
@@ -9,11 +13,11 @@ export function App() {
       <Route element={<AppLayout />}>
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/streams" element={<PlaceholderPage title="Class Streams" />} />
-        <Route path="/students" element={<PlaceholderPage title="Students" />} />
-        <Route path="/subjects" element={<PlaceholderPage title="Subjects" />} />
-        <Route path="/records" element={<PlaceholderPage title="Academic Records" />} />
-        <Route path="/reports" element={<PlaceholderPage title="Reports" />} />
+        <Route path="/streams" element={<StreamsPage />} />
+        <Route path="/students" element={<StudentsPage />} />
+        <Route path="/subjects" element={<SubjectsPage />} />
+        <Route path="/records" element={<AcademicRecordsPage />} />
+        <Route path="/reports" element={<ReportsPage />} />
       </Route>
     </Routes>
   );

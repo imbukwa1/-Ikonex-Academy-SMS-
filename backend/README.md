@@ -25,17 +25,7 @@ Backend API for Ikonex Academy using Node.js, TypeScript, Express, PostgreSQL, a
    npm run seed
    ```
 
-5. Import spreadsheet data when needed:
-
-   ```bash
-   npm run import:workbook -- "C:\Users\imbuk\Downloads\Ikonex_SMS_Demo_Data_120_Students.xlsx" "Term 1"
-   ```
-
-   The importer reads the workbook headers dynamically, removes trailing headcount
-   numbers from student names, creates streams and subjects, assigns subjects to
-   streams, registers students, and upserts assessment scores.
-
-6. Start the API:
+5. Start the API:
 
    ```bash
    npm run dev

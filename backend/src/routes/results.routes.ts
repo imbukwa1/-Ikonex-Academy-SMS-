@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  getAssessmentTerms,
   getClassPerformance,
   getStudentResults,
   getSubjectStreamResults,
@@ -7,6 +8,7 @@ import {
 
 const router = Router();
 
+router.get("/terms", getAssessmentTerms);
 router.get("/subject/:subjectId/stream/:streamId", getSubjectStreamResults);
 router.get("/student/:studentId", getStudentResults);
 router.get("/class/:streamId", getClassPerformance);
