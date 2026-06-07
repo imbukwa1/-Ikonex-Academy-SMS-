@@ -20,6 +20,7 @@ export type Student = {
   admission_number: string;
   first_name: string;
   last_name: string;
+  age?: number | null;
   stream_id: number;
   stream?: Stream;
   assessments?: Assessment[];
@@ -134,6 +135,7 @@ export type CreateStudentInput = {
   admission_number: string;
   first_name: string;
   last_name: string;
+  age?: number;
   stream_id: number;
 };
 
@@ -143,4 +145,14 @@ export type ScoreInput = {
   ca_score: number;
   exam_score: number;
   term: string;
+};
+
+export type BulkScoreInput = {
+  subject_id: number;
+  term: string;
+  scores: Array<{
+    student_id: number;
+    ca_score: number;
+    exam_score: number;
+  }>;
 };

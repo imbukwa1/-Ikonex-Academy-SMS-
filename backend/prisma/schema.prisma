@@ -31,6 +31,7 @@ model Student {
   admission_number String       @unique
   first_name       String
   last_name        String
+  age              Int?
   stream_id        Int
   stream           Stream       @relation(fields: [stream_id], references: [id], onDelete: Restrict)
   assessments      Assessment[]

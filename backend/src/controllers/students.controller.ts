@@ -4,10 +4,20 @@ import { AppError } from "../utils/AppError";
 
 export const createStudent: RequestHandler = async (req, res, next) => {
   try {
-    const { admission_number, first_name, last_name, stream_id } = req.body;
+    const { admission_number, first_name, last_name, age, stream_id } = req.body;
 
     if (!admission_number || !first_name || !last_name || !stream_id) {
-      throw new AppError("Admission number, first_name, last_name, and stream_id are required.");
+      throw new AppError(
+        "Admission number, first_name, last_name, and stream_id are required."
+      );
+    }
+
+    const studentAge = age === undefined || age === "" ? undefined : Number(age);
+    if (
+      studentAge !== undefined &&
+      (!Number.isInteger(studentAge) || studentAge < 3 || studentAge > 30)
+    ) {
+      throw new AppError("Age must be a whole number between 3 and 30.");
     }
 
     const student = await prisma.student.create({
@@ -15,6 +25,7 @@ export const createStudent: RequestHandler = async (req, res, next) => {
         admission_number,
         first_name,
         last_name,
+        age: studentAge,
         stream_id: Number(stream_id),
       },
       include: { stream: true },
@@ -62,14 +73,28 @@ export const getStudentsByStream: RequestHandler = async (req, res, next) => {
 export const updateStudent: RequestHandler = async (req, res, next) => {
   try {
     const id = Number(req.params.id);
-    const { admission_number, first_name, last_name, stream_id } = req.body;
+    const { admission_number, first_name, last_name, age, stream_id } = req.body;
 
     if (Number.isNaN(id)) {
       throw new AppError("Student id must be a number.");
     }
 
-    if (!admission_number && !first_name && !last_name && !stream_id) {
+    if (
+      !admission_number &&
+      !first_name &&
+      !last_name &&
+      age === undefined &&
+      !stream_id
+    ) {
       throw new AppError("Provide at least one field to update.");
+    }
+
+    const studentAge = age === undefined || age === "" ? undefined : Number(age);
+    if (
+      studentAge !== undefined &&
+      (!Number.isInteger(studentAge) || studentAge < 3 || studentAge > 30)
+    ) {
+      throw new AppError("Age must be a whole number between 3 and 30.");
     }
 
     const student = await prisma.student.update({
@@ -78,6 +103,7 @@ export const updateStudent: RequestHandler = async (req, res, next) => {
         admission_number,
         first_name,
         last_name,
+        age: studentAge,
         stream_id: stream_id ? Number(stream_id) : undefined,
       },
       include: { stream: true },

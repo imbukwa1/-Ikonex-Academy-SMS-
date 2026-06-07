@@ -1,6 +1,7 @@
 import axios from "axios";
 import type {
   Assessment,
+  BulkScoreInput,
   ClassPerformanceResults,
   CreateStreamInput,
   CreateStudentInput,
@@ -109,6 +110,14 @@ export const scoresApi = {
   },
   bulkCreate: async (payloads: ScoreInput[]) => {
     return Promise.all(payloads.map((payload) => scoresApi.create(payload)));
+  },
+  saveBulk: async (payload: BulkScoreInput) => {
+    const { data } = await apiClient.post<{
+      message: string;
+      count: number;
+      scores: Assessment[];
+    }>("/scores/bulk", payload);
+    return data;
   },
 };
 

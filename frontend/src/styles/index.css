@@ -18,3 +18,9 @@ select,
 textarea {
   font: inherit;
 }
+
+@layer components {
+  .input-control {
+    @apply h-11 w-full rounded-lg border border-slate-200 px-3 text-sm outline-none transition focus:border-academy-700 focus:ring-2 focus:ring-blue-100;
+  }
+}
