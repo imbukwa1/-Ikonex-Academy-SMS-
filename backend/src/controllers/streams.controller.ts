@@ -1,3 +1,4 @@
+// backend\src\controllers\streams.controller.ts
 import { RequestHandler } from "express";
 import { prisma } from "../db";
 import { AppError } from "../utils/AppError";
