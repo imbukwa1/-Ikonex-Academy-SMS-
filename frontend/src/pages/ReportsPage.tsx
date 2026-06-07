@@ -1,9 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import { FileText } from "lucide-react";
+import { PDFDownloadLink } from "@react-pdf/renderer";
+import { Download, FileText } from "lucide-react";
+import { useState } from "react";
 import { EmptyState } from "../components/feedback/EmptyState";
 import { TableSkeleton } from "../components/feedback/Skeleton";
+import { ClassSummaryReport } from "../reports/ClassSummaryReport";
 import { resultsApi, streamsApi } from "../services/api";
-import { useState } from "react";
 
 export function ReportsPage() {
   const [streamId, setStreamId] = useState("");
@@ -20,17 +22,53 @@ export function ReportsPage() {
 
   const rows = reportQuery.data?.rankings ?? [];
   const summary = reportQuery.data?.summary;
+  const selectedStream = (streamsQuery.data ?? []).find(
+    (stream) => stream.id === Number(selectedStreamId)
+  );
+  const academicYear = String(new Date().getFullYear());
+  const fileName = `${selectedStream?.name ?? "class"}-${selectedTerm || "report"}-performance.pdf`
+    .toLowerCase()
+    .replace(/[^a-z0-9.-]+/g, "-");
 
   return (
     <section className="mx-auto max-w-7xl space-y-6">
       <PageHeader eyebrow="Reports" title="Class Performance Reports" />
-      <div className="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 shadow-soft md:grid-cols-2">
+      <div className="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 shadow-soft md:grid-cols-[1fr_1fr_auto]">
         <select value={selectedStreamId} onChange={(event) => setStreamId(event.target.value)} className="h-11 rounded-lg border border-slate-200 px-3 text-sm outline-none">
           {(streamsQuery.data ?? []).map((stream) => <option key={stream.id} value={stream.id}>{stream.name}</option>)}
         </select>
         <select value={selectedTerm} onChange={(event) => setTerm(event.target.value)} className="h-11 rounded-lg border border-slate-200 px-3 text-sm outline-none">
           {(termsQuery.data ?? []).map((item) => <option key={item} value={item}>{item}</option>)}
         </select>
+        {reportQuery.data && selectedStream && rows.length > 0 ? (
+          <PDFDownloadLink
+            document={
+              <ClassSummaryReport
+                data={reportQuery.data}
+                stream={selectedStream}
+                academicYear={academicYear}
+              />
+            }
+            fileName={fileName}
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-academy-700 px-4 text-sm font-semibold text-white hover:bg-blue-700"
+          >
+            {({ loading }) => (
+              <>
+                <Download className="h-4 w-4" />
+                {loading ? "Preparing PDF..." : "Generate Class Report"}
+              </>
+            )}
+          </PDFDownloadLink>
+        ) : (
+          <button
+            type="button"
+            disabled
+            className="inline-flex h-11 cursor-not-allowed items-center justify-center gap-2 rounded-lg bg-slate-200 px-4 text-sm font-semibold text-slate-500"
+          >
+            <Download className="h-4 w-4" />
+            {reportQuery.isLoading ? "Loading Report..." : "Generate Class Report"}
+          </button>
+        )}
       </div>
       {summary ? <div className="grid gap-4 md:grid-cols-4"><Summary label="Highest" value={summary.highest_score} /><Summary label="Lowest" value={summary.lowest_score} /><Summary label="Class Average" value={summary.class_average} /><Summary label="Students" value={summary.students_count} /></div> : null}
       {reportQuery.isLoading ? <TableSkeleton columns={6} /> : rows.length === 0 ? (
