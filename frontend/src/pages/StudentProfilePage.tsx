@@ -1,26 +1,36 @@
 import { PDFDownloadLink } from "@react-pdf/renderer";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
   BookOpen,
   Download,
   FileWarning,
   GraduationCap,
+  Pencil,
+  Trash2,
   UserRound,
 } from "lucide-react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { ProfileSkeleton } from "../components/feedback/Skeleton";
 import {
   canGenerateStudentReport,
   StudentReportCard,
 } from "../reports/StudentReportCard";
-import { resultsApi, studentsApi } from "../services/api";
+import { resultsApi, streamsApi, studentsApi } from "../services/api";
 
 export function StudentProfilePage() {
   const { id } = useParams();
   const studentId = Number(id);
   const [term, setTerm] = useState("");
+  const [editing, setEditing] = useState(false);
+  const [editFirstName, setEditFirstName] = useState("");
+  const [editLastName, setEditLastName] = useState("");
+  const [editAge, setEditAge] = useState("");
+  const [editStreamId, setEditStreamId] = useState("");
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const studentQuery = useQuery({
     queryKey: ["student", studentId],
@@ -32,6 +42,7 @@ export function StudentProfilePage() {
     queryFn: () => resultsApi.studentTerms(studentId),
     enabled: Number.isInteger(studentId) && studentId > 0,
   });
+  const streamsQuery = useQuery({ queryKey: ["streams"], queryFn: streamsApi.list });
 
   useEffect(() => {
     if (!term && termsQuery.data?.length) {
@@ -43,6 +54,30 @@ export function StudentProfilePage() {
     queryKey: ["student-results", studentId, term],
     queryFn: () => resultsApi.student(studentId, term),
     enabled: Boolean(studentId && term),
+  });
+  const updateStudent = useMutation({
+    mutationFn: () => studentsApi.update(studentId, {
+      first_name: editFirstName.trim(),
+      last_name: editLastName.trim(),
+      age: editAge ? Number(editAge) : undefined,
+      stream_id: Number(editStreamId),
+    }),
+    onSuccess: () => {
+      toast.success("Student updated");
+      setEditing(false);
+      queryClient.invalidateQueries({ queryKey: ["student", studentId] });
+      queryClient.invalidateQueries({ queryKey: ["students"] });
+    },
+    onError: (error) => toast.error(error.message),
+  });
+  const deleteStudent = useMutation({
+    mutationFn: () => studentsApi.delete(studentId),
+    onSuccess: () => {
+      toast.success("Student deleted");
+      queryClient.invalidateQueries({ queryKey: ["students"] });
+      navigate("/students");
+    },
+    onError: (error) => toast.error(error.message),
   });
 
   if (studentQuery.isLoading || termsQuery.isLoading) {
@@ -65,6 +100,14 @@ export function StudentProfilePage() {
   const fileName = `${student.admission_number}-${term || "report-card"}.pdf`
     .toLowerCase()
     .replace(/[^a-z0-9.-]+/g, "-");
+
+  function beginEditing() {
+    setEditFirstName(student.first_name);
+    setEditLastName(student.last_name);
+    setEditAge(student.age ? String(student.age) : "");
+    setEditStreamId(String(student.stream_id));
+    setEditing(true);
+  }
 
   return (
     <section className="mx-auto max-w-7xl space-y-6">
@@ -93,6 +136,8 @@ export function StudentProfilePage() {
         </div>
 
         <div className="flex flex-col gap-3 sm:flex-row">
+          <button type="button" onClick={beginEditing} className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-white/20 px-4 text-sm font-semibold"><Pencil className="h-4 w-4" />Edit</button>
+          <button type="button" onClick={() => { if (confirm(`Delete ${fullName}? This also deletes their scores.`)) deleteStudent.mutate(); }} className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-red-300/40 px-4 text-sm font-semibold text-red-200"><Trash2 className="h-4 w-4" />Delete</button>
           <select
             value={term}
             onChange={(event) => setTerm(event.target.value)}
@@ -140,6 +185,8 @@ export function StudentProfilePage() {
           )}
         </div>
       </div>
+
+      {editing ? <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-soft"><h2 className="font-bold">Edit Student Information</h2><div className="mt-4 grid gap-4 md:grid-cols-4"><input className="input-control" value={editFirstName} onChange={(event) => setEditFirstName(event.target.value)} placeholder="First name" /><input className="input-control" value={editLastName} onChange={(event) => setEditLastName(event.target.value)} placeholder="Last name" /><input type="number" min={3} max={30} className="input-control" value={editAge} onChange={(event) => setEditAge(event.target.value)} placeholder="Age" /><select className="input-control" value={editStreamId} onChange={(event) => setEditStreamId(event.target.value)}>{(streamsQuery.data ?? []).map((stream) => <option key={stream.id} value={stream.id}>{stream.name}</option>)}</select></div><div className="mt-4 flex justify-end gap-2"><button type="button" onClick={() => setEditing(false)} className="rounded-lg border px-4 py-2 text-sm font-semibold">Cancel</button><button type="button" onClick={() => updateStudent.mutate()} className="rounded-lg bg-academy-700 px-4 py-2 text-sm font-semibold text-white">Save Changes</button></div></div> : null}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <InfoCard label="Admission Number" value={student.admission_number} />

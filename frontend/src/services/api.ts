@@ -6,6 +6,7 @@ import type {
   CreateStreamInput,
   CreateStudentInput,
   CreateSubjectInput,
+  GradingScale,
   ScoreInput,
   Stream,
   Student,
@@ -117,6 +118,26 @@ export const scoresApi = {
       count: number;
       scores: Assessment[];
     }>("/scores/bulk", payload);
+    return data;
+  },
+  entries: async (subjectId: number, streamId: number, term: string) => {
+    const { data } = await apiClient.get<Assessment[]>(
+      `/scores/subject/${subjectId}/stream/${streamId}`,
+      { params: { term } }
+    );
+    return data;
+  },
+};
+
+export const gradingApi = {
+  list: async () => {
+    const { data } = await apiClient.get<GradingScale[]>("/grading-scales");
+    return data;
+  },
+  update: async (scales: GradingScale[]) => {
+    const { data } = await apiClient.put<GradingScale[]>("/grading-scales", {
+      scales,
+    });
     return data;
   },
 };

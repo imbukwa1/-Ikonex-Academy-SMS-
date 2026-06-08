@@ -5,7 +5,7 @@ import { AppError } from "../utils/AppError";
 
 export const createStream: RequestHandler = async (req, res, next) => {
   try {
-    const { name, subjectIds } = req.body;
+    const { name } = req.body;
 
     if (!name) {
       throw new AppError("Stream name is required.");
@@ -14,9 +14,11 @@ export const createStream: RequestHandler = async (req, res, next) => {
     const stream = await prisma.stream.create({
       data: {
         name,
-        subjects: Array.isArray(subjectIds)
-          ? { connect: subjectIds.map((id: number) => ({ id })) }
-          : undefined,
+        subjects: {
+          connect: (await prisma.subject.findMany({ select: { id: true } })).map(
+            (subject) => ({ id: subject.id })
+          ),
+        },
       },
       include: { subjects: true },
     });

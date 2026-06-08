@@ -43,7 +43,7 @@ type ClassRankingRow = {
   overall_position: bigint;
 };
 
-export const GRADING_SCALE: GradeBoundary[] = [
+export const DEFAULT_GRADING_SCALE: GradeBoundary[] = [
   { grade: "A", min: 80, max: 100, remarks: "Exemplary" },
   { grade: "B", min: 70, max: 79, remarks: "Very good" },
   { grade: "C", min: 60, max: 69, remarks: "Satisfactory" },
@@ -51,12 +51,16 @@ export const GRADING_SCALE: GradeBoundary[] = [
   { grade: "E", min: 0, max: 49, remarks: "Needs focused support" },
 ];
 
-export function getGradeAndRemarks(totalScore: number) {
-  const boundary = GRADING_SCALE.find(
+export async function getGradeAndRemarks(totalScore: number) {
+  const configuredScale = await prisma.gradingScale.findMany({
+    orderBy: { min: "desc" },
+  });
+  const scale = configuredScale.length > 0 ? configuredScale : DEFAULT_GRADING_SCALE;
+  const boundary = scale.find(
     (scale) => totalScore >= scale.min && totalScore <= scale.max
   );
 
-  return boundary ?? GRADING_SCALE[GRADING_SCALE.length - 1];
+  return boundary ?? scale[scale.length - 1];
 }
 
 function ordinal(position: number) {
@@ -182,6 +186,8 @@ export async function calculateSubjectStreamResults(
       WHERE st.stream_id = ${streamId}
         AND a.subject_id = ${subjectId}
         AND a.term = ${term}
+        AND a.ca_recorded = true
+        AND a.exam_recorded = true
     ) ranked
     ORDER BY ranked.subject_position ASC, ranked.student_name ASC
   `;
@@ -227,7 +233,10 @@ export async function calculateStreamRankings(streamId: number, term: string) {
         ) AS overall_position
       FROM students st
       INNER JOIN streams s ON s.id = st.stream_id
-      LEFT JOIN assessments a ON a.student_id = st.id AND a.term = ${term}
+      LEFT JOIN assessments a ON a.student_id = st.id
+        AND a.term = ${term}
+        AND a.ca_recorded = true
+        AND a.exam_recorded = true
       WHERE st.stream_id = ${streamId}
       GROUP BY st.id, st.admission_number, st.first_name, st.last_name, s.id, s.name
     ) ranked
@@ -373,6 +382,8 @@ export async function calculateStudentResults(studentId: number, term: string) {
       INNER JOIN subjects su ON su.id = a.subject_id
       WHERE st.stream_id = ${student.stream_id}
         AND a.term = ${term}
+        AND a.ca_recorded = true
+        AND a.exam_recorded = true
     ) ranked
     WHERE ranked.student_id = ${student.id}
     ORDER BY ranked.subject_name ASC
@@ -381,18 +392,23 @@ export async function calculateStudentResults(studentId: number, term: string) {
   const currentStudentRanking = classRankings.find(
     (ranking) => ranking.student_id === student.id
   );
-  const recordedSubjectIds = new Set(student.assessments.map((assessment) => assessment.subject_id));
+  const completedAssessments = student.assessments.filter(
+    (assessment) => assessment.ca_recorded && assessment.exam_recorded
+  );
+  const recordedSubjectIds = new Set(
+    completedAssessments.map((assessment) => assessment.subject_id)
+  );
   const missingSubjects = assignedSubjects.filter(
     (subject) => !recordedSubjectIds.has(subject.id)
   );
 
-  const totalMarks = student.assessments.reduce(
+  const totalMarks = completedAssessments.reduce(
     (sum, assessment) => sum + assessment.total_score,
     0
   );
   const average =
-    student.assessments.length > 0
-      ? Number((totalMarks / student.assessments.length).toFixed(2))
+    completedAssessments.length > 0
+      ? Number((totalMarks / completedAssessments.length).toFixed(2))
       : 0;
 
   return {
@@ -407,7 +423,7 @@ export async function calculateStudentResults(studentId: number, term: string) {
     },
     term,
     expected_subjects: assignedSubjects.length,
-    report_ready: missingSubjects.length === 0 && student.assessments.length > 0,
+    report_ready: missingSubjects.length === 0 && completedAssessments.length > 0,
     missing_subjects: missingSubjects.map((subject) => ({
       id: subject.id,
       name: subject.name,
@@ -417,7 +433,7 @@ export async function calculateStudentResults(studentId: number, term: string) {
     average,
     overall_position: currentStudentRanking?.position ?? null,
     overall_position_label: currentStudentRanking?.position_label ?? null,
-    subjects: student.assessments.map((assessment) => ({
+    subjects: completedAssessments.map((assessment) => ({
       subject_id: assessment.subject_id,
       subject_name: assessment.subject.name,
       ca_score: assessment.ca_score,

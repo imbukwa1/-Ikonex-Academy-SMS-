@@ -4,7 +4,7 @@ import { AppError } from "../utils/AppError";
 
 export const createSubject: RequestHandler = async (req, res, next) => {
   try {
-    const { name, code, streamIds } = req.body;
+    const { name, code } = req.body;
 
     if (!name || !code) {
       throw new AppError("Subject name and code are required.");
@@ -14,9 +14,11 @@ export const createSubject: RequestHandler = async (req, res, next) => {
       data: {
         name,
         code,
-        streams: Array.isArray(streamIds)
-          ? { connect: streamIds.map((id: number) => ({ id })) }
-          : undefined,
+        streams: {
+          connect: (await prisma.stream.findMany({ select: { id: true } })).map(
+            (stream) => ({ id: stream.id })
+          ),
+        },
       },
       include: { streams: true },
     });

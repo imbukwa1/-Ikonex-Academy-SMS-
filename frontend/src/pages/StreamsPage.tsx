@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { BookOpen, GraduationCap, Plus, UsersRound } from "lucide-react";
 import { FormEvent, useState } from "react";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { EmptyState } from "../components/feedback/EmptyState";
 import { TableSkeleton } from "../components/feedback/Skeleton";
@@ -52,7 +53,7 @@ export function StreamsPage() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {streams.map((stream) => (
-            <div key={stream.id} className="rounded-lg border border-slate-200 bg-white p-5 shadow-soft">
+            <Link to={`/streams/${stream.id}`} key={stream.id} className="block rounded-lg border border-slate-200 bg-white p-5 shadow-soft transition hover:border-blue-300 hover:shadow-md">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Class Stream</p>
@@ -71,7 +72,8 @@ export function StreamsPage() {
                   <span key={subject.id} className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">{subject.name}</span>
                 ))}
               </div>
-            </div>
+              <p className="mt-4 text-sm font-semibold text-academy-700">View stream details</p>
+            </Link>
           ))}
         </div>
       )}

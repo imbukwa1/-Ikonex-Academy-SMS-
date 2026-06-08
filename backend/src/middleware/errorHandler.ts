@@ -22,6 +22,13 @@ export const errorHandler: ErrorRequestHandler = (error, _req, res, _next) => {
       return res.status(404).json({ message: "Record not found." });
     }
 
+    if (error.code === "P2003") {
+      return res.status(409).json({
+        message:
+          "This record is still in use and cannot be deleted until its related records are removed.",
+      });
+    }
+
     if (error.code === "P2021" || error.code === "P2022") {
       console.error("Database schema is out of date:", error);
       return res.status(503).json({

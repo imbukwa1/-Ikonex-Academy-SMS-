@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import express from "express";
 import { prisma } from "./db";
 import { errorHandler } from "./middleware/errorHandler";
+import gradingRoutes from "./routes/grading.routes";
 import resultsRoutes from "./routes/results.routes";
 import scoresRoutes from "./routes/scores.routes";
 import streamsRoutes from "./routes/streams.routes";
@@ -62,6 +63,7 @@ app.use("/subjects", subjectsRoutes);
 app.use("/students", studentsRoutes);
 app.use("/scores", scoresRoutes);
 app.use("/results", resultsRoutes);
+app.use("/grading-scales", gradingRoutes);
 
 app.use(errorHandler);
 

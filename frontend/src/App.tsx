@@ -4,6 +4,7 @@ import { AcademicRecordsPage } from "./pages/AcademicRecordsPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { ReportsPage } from "./pages/ReportsPage";
 import { StreamsPage } from "./pages/StreamsPage";
+import { StreamDetailsPage } from "./pages/StreamDetailsPage";
 import { StudentsPage } from "./pages/StudentsPage";
 import { StudentProfilePage } from "./pages/StudentProfilePage";
 import { SubjectsPage } from "./pages/SubjectsPage";
@@ -15,6 +16,7 @@ export function App() {
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/streams" element={<StreamsPage />} />
+        <Route path="/streams/:id" element={<StreamDetailsPage />} />
         <Route path="/students" element={<StudentsPage />} />
         <Route path="/students/:id" element={<StudentProfilePage />} />
         <Route path="/subjects" element={<SubjectsPage />} />

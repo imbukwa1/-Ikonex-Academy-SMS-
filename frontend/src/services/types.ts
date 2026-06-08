@@ -32,6 +32,8 @@ export type Assessment = {
   subject_id: number;
   ca_score: number;
   exam_score: number;
+  ca_recorded?: boolean;
+  exam_recorded?: boolean;
   total_score: number;
   grade: string;
   remarks: string;
@@ -149,9 +151,17 @@ export type ScoreInput = {
 export type BulkScoreInput = {
   subject_id: number;
   term: string;
+  assessment_type: "CAT" | "EXAM";
   scores: Array<{
     student_id: number;
-    ca_score: number;
-    exam_score: number;
+    score: number;
   }>;
+};
+
+export type GradingScale = {
+  id?: number;
+  grade: string;
+  min: number;
+  max: number;
+  remarks: string;
 };

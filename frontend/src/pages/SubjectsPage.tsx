@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BookOpen, Plus, Search } from "lucide-react";
+import { BookOpen, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { FormEvent, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { EmptyState } from "../components/feedback/EmptyState";
@@ -10,6 +10,9 @@ export function SubjectsPage() {
   const [search, setSearch] = useState("");
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editCode, setEditCode] = useState("");
   const queryClient = useQueryClient();
   const subjectsQuery = useQuery({ queryKey: ["subjects"], queryFn: subjectsApi.list });
   const createSubject = useMutation({
@@ -20,6 +23,17 @@ export function SubjectsPage() {
       setCode("");
       queryClient.invalidateQueries({ queryKey: ["subjects"] });
     },
+    onError: (error) => toast.error(error.message),
+  });
+  const updateSubject = useMutation({
+    mutationFn: ({ id, name, code }: { id: number; name: string; code: string }) =>
+      subjectsApi.update(id, { name, code }),
+    onSuccess: () => { toast.success("Subject updated"); setEditingId(null); queryClient.invalidateQueries({ queryKey: ["subjects"] }); queryClient.invalidateQueries({ queryKey: ["streams"] }); },
+    onError: (error) => toast.error(error.message),
+  });
+  const deleteSubject = useMutation({
+    mutationFn: subjectsApi.delete,
+    onSuccess: () => { toast.success("Subject deleted"); queryClient.invalidateQueries({ queryKey: ["subjects"] }); queryClient.invalidateQueries({ queryKey: ["streams"] }); },
     onError: (error) => toast.error(error.message),
   });
 
@@ -56,8 +70,8 @@ export function SubjectsPage() {
       ) : (
         <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-soft">
           <table className="min-w-full text-sm">
-            <thead className="sticky top-0 bg-slate-50"><tr><Th>Name</Th><Th>Code</Th><Th>Assigned Streams</Th></tr></thead>
-            <tbody>{subjects.map((subject) => <tr key={subject.id}><Td strong>{subject.name}</Td><Td>{subject.code}</Td><Td>{subject.streams?.length ?? 0}</Td></tr>)}</tbody>
+            <thead className="sticky top-0 bg-slate-50"><tr><Th>Name</Th><Th>Code</Th><Th>Assigned Streams</Th><Th>Actions</Th></tr></thead>
+            <tbody>{subjects.map((subject) => <tr key={subject.id}>{editingId === subject.id ? <><Td><input className="input-control" value={editName} onChange={(event) => setEditName(event.target.value)} /></Td><Td><input className="input-control" value={editCode} onChange={(event) => setEditCode(event.target.value.toUpperCase())} /></Td><Td>{subject.streams?.length ?? 0}</Td><Td><button onClick={() => updateSubject.mutate({ id: subject.id, name: editName, code: editCode })} className="font-semibold text-academy-700">Save</button></Td></> : <><Td strong>{subject.name}</Td><Td>{subject.code}</Td><Td>{subject.streams?.length ?? 0}</Td><Td><div className="flex gap-2"><button title="Edit subject" onClick={() => { setEditingId(subject.id); setEditName(subject.name); setEditCode(subject.code); }} className="rounded p-2 text-blue-700 hover:bg-blue-50"><Pencil className="h-4 w-4" /></button><button title="Delete subject" onClick={() => { if (confirm(`Delete ${subject.name}?`)) deleteSubject.mutate(subject.id); }} className="rounded p-2 text-red-600 hover:bg-red-50"><Trash2 className="h-4 w-4" /></button></div></Td></>}</tr>)}</tbody>
           </table>
         </div>
       )}

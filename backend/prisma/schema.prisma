@@ -45,6 +45,8 @@ model Assessment {
   subject_id  Int
   ca_score    Int
   exam_score  Int
+  ca_recorded Boolean @default(true)
+  exam_recorded Boolean @default(true)
   total_score Int
   grade       String
   remarks     String
@@ -54,4 +56,14 @@ model Assessment {
 
   @@unique([student_id, subject_id, term])
   @@map("assessments")
+}
+
+model GradingScale {
+  id      Int    @id @default(autoincrement())
+  grade   String @unique
+  min     Int
+  max     Int
+  remarks String
+
+  @@map("grading_scales")
 }
