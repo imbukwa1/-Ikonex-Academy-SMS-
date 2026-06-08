@@ -136,8 +136,8 @@ export function StudentProfilePage() {
         </div>
 
         <div className="flex flex-col gap-3 sm:flex-row">
-          <button type="button" onClick={beginEditing} className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-white/20 px-4 text-sm font-semibold"><Pencil className="h-4 w-4" />Edit</button>
-          <button type="button" onClick={() => { if (confirm(`Delete ${fullName}? This also deletes their scores.`)) deleteStudent.mutate(); }} className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-red-300/40 px-4 text-sm font-semibold text-red-200"><Trash2 className="h-4 w-4" />Delete</button>
+          <button type="button" onClick={beginEditing} className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-white/40 bg-white/10 px-4 text-sm font-semibold text-white hover:bg-white/20"><Pencil className="h-4 w-4" />Edit</button>
+          <button type="button" onClick={() => { if (confirm(`Delete ${fullName}? This also deletes their scores.`)) deleteStudent.mutate(); }} className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-red-300 bg-red-950/40 px-4 text-sm font-semibold text-red-100 hover:bg-red-900/60"><Trash2 className="h-4 w-4" />Delete</button>
           <select
             value={term}
             onChange={(event) => setTerm(event.target.value)}
