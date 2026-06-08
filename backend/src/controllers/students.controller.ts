@@ -4,12 +4,10 @@ import { AppError } from "../utils/AppError";
 
 export const createStudent: RequestHandler = async (req, res, next) => {
   try {
-    const { admission_number, first_name, last_name, age, stream_id } = req.body;
+    const { first_name, last_name, age, stream_id } = req.body;
 
-    if (!admission_number || !first_name || !last_name || !stream_id) {
-      throw new AppError(
-        "Admission number, first_name, last_name, and stream_id are required."
-      );
+    if (!first_name || !last_name || !stream_id) {
+      throw new AppError("First name, last name, and stream are required.");
     }
 
     const studentAge = age === undefined || age === "" ? undefined : Number(age);
@@ -22,7 +20,6 @@ export const createStudent: RequestHandler = async (req, res, next) => {
 
     const student = await prisma.student.create({
       data: {
-        admission_number,
         first_name,
         last_name,
         age: studentAge,
@@ -73,14 +70,13 @@ export const getStudentsByStream: RequestHandler = async (req, res, next) => {
 export const updateStudent: RequestHandler = async (req, res, next) => {
   try {
     const id = Number(req.params.id);
-    const { admission_number, first_name, last_name, age, stream_id } = req.body;
+    const { first_name, last_name, age, stream_id } = req.body;
 
     if (Number.isNaN(id)) {
       throw new AppError("Student id must be a number.");
     }
 
     if (
-      !admission_number &&
       !first_name &&
       !last_name &&
       age === undefined &&
@@ -100,7 +96,6 @@ export const updateStudent: RequestHandler = async (req, res, next) => {
     const student = await prisma.student.update({
       where: { id },
       data: {
-        admission_number,
         first_name,
         last_name,
         age: studentAge,

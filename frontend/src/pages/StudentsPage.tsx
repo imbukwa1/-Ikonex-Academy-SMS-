@@ -7,14 +7,12 @@ import { TableSkeleton } from "../components/feedback/Skeleton";
 import { streamsApi, studentsApi } from "../services/api";
 
 type RegistrationForm = {
-  admissionNumber: string;
   fullName: string;
   age: string;
   streamId: string;
 };
 
 const emptyForm: RegistrationForm = {
-  admissionNumber: "",
   fullName: "",
   age: "",
   streamId: "",
@@ -67,13 +65,12 @@ export function StudentsPage() {
       toast.error("Enter the student's first and last name");
       return;
     }
-    if (!form.admissionNumber.trim() || !form.streamId) {
-      toast.error("Admission number and stream are required");
+    if (!form.streamId) {
+      toast.error("Select a class stream");
       return;
     }
 
     createStudent.mutate({
-      admission_number: form.admissionNumber.trim(),
       first_name: nameParts[0],
       last_name: nameParts.slice(1).join(" "),
       age: form.age ? Number(form.age) : undefined,
@@ -106,16 +103,7 @@ export function StudentsPage() {
               Enter the student details and select the class stream.
             </p>
           </div>
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <Field label="Admission Number">
-              <input
-                value={form.admissionNumber}
-                onChange={(event) => updateForm("admissionNumber", event.target.value)}
-                placeholder="e.g. IKX121"
-                className="input-control"
-                required
-              />
-            </Field>
+          <div className="grid gap-4 md:grid-cols-3">
             <Field label="Full Name">
               <input
                 value={form.fullName}
@@ -152,6 +140,9 @@ export function StudentsPage() {
               </select>
             </Field>
           </div>
+          <p className="mt-3 text-sm text-slate-500">
+            The admission number will be assigned automatically.
+          </p>
           <div className="mt-5 flex justify-end">
             <button
               disabled={createStudent.isPending}

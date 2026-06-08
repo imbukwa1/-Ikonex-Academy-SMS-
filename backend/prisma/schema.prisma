@@ -28,7 +28,7 @@ model Subject {
 
 model Student {
   id               Int          @id @default(autoincrement())
-  admission_number String       @unique
+  admission_number String       @unique @default(dbgenerated("('IKX' || lpad(nextval('student_admission_number_seq')::text, 4, '0'))"))
   first_name       String
   last_name        String
   age              Int?

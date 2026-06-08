@@ -132,7 +132,6 @@ export type CreateSubjectInput = {
 };
 
 export type CreateStudentInput = {
-  admission_number: string;
   first_name: string;
   last_name: string;
   age?: number;
