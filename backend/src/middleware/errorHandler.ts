@@ -30,6 +30,14 @@ export const errorHandler: ErrorRequestHandler = (error, _req, res, _next) => {
     }
   }
 
+  if (error instanceof Prisma.PrismaClientInitializationError) {
+    console.error("Database connection failed:", error);
+    return res.status(503).json({
+      message:
+        "The database connection is unavailable. Check the server DATABASE_URL.",
+    });
+  }
+
   console.error(error);
   return res.status(500).json({ message: "Internal server error." });
 };

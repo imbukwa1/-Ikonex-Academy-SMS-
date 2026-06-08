@@ -1,6 +1,7 @@
 import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
+import { prisma } from "./db";
 import { errorHandler } from "./middleware/errorHandler";
 import resultsRoutes from "./routes/results.routes";
 import scoresRoutes from "./routes/scores.routes";
@@ -32,8 +33,28 @@ app.use(
 );
 app.use(express.json());
 
-app.get("/health", (_req, res) => {
-  res.json({ status: "ok" });
+app.get("/", (_req, res) => {
+  res.json({
+    name: "Ikonex Academy SMS API",
+    status: "running",
+  });
+});
+
+app.get("/health", async (_req, res) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    res.json({
+      status: "ok",
+      database: "connected",
+    });
+  } catch (error) {
+    console.error("Database health check failed:", error);
+    res.status(503).json({
+      status: "error",
+      database: "disconnected",
+      message: "The API cannot connect to PostgreSQL.",
+    });
+  }
 });
 
 app.use("/streams", streamsRoutes);
