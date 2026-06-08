@@ -292,6 +292,26 @@ export async function listAssessmentTerms() {
   return terms.map((item) => item.term);
 }
 
+export async function listStudentAssessmentTerms(studentId: number) {
+  const student = await prisma.student.findUnique({
+    where: { id: studentId },
+    select: { id: true },
+  });
+
+  if (!student) {
+    throw new AppError("Student not found.", 404);
+  }
+
+  const terms = await prisma.assessment.findMany({
+    where: { student_id: studentId },
+    distinct: ["term"],
+    select: { term: true },
+    orderBy: { term: "asc" },
+  });
+
+  return terms.map((item) => item.term);
+}
+
 export async function calculateStudentResults(studentId: number, term: string) {
   const student = await prisma.student.findUnique({
     where: { id: studentId },
@@ -381,6 +401,8 @@ export async function calculateStudentResults(studentId: number, term: string) {
       admission_number: student.admission_number,
       first_name: student.first_name,
       last_name: student.last_name,
+      age: student.age,
+      stream_id: student.stream_id,
       stream: student.stream,
     },
     term,

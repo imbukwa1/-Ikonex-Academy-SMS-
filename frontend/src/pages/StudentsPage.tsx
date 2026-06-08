@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Search, UserPlus, UsersRound, X } from "lucide-react";
 import { FormEvent, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { EmptyState } from "../components/feedback/EmptyState";
 import { TableSkeleton } from "../components/feedback/Skeleton";
@@ -204,7 +205,12 @@ export function StudentsPage() {
                 <tr key={student.id}>
                   <Td strong>{student.admission_number}</Td>
                   <Td>
-                    {student.first_name} {student.last_name}
+                    <Link
+                      to={`/students/${student.id}`}
+                      className="font-semibold text-academy-700 hover:text-blue-800 hover:underline"
+                    >
+                      {student.first_name} {student.last_name}
+                    </Link>
                   </Td>
                   <Td>{student.age ?? "-"}</Td>
                   <Td>{student.stream?.name ?? "Unassigned"}</Td>

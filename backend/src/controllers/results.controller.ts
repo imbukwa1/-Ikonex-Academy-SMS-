@@ -4,6 +4,7 @@ import {
   calculateStudentResults,
   calculateSubjectStreamResults,
   listAssessmentTerms,
+  listStudentAssessmentTerms,
 } from "../services/results.service";
 import { AppError } from "../utils/AppError";
 
@@ -71,6 +72,21 @@ export const getClassPerformance: RequestHandler = async (req, res, next) => {
 export const getAssessmentTerms: RequestHandler = async (_req, res, next) => {
   try {
     const terms = await listAssessmentTerms();
+    res.json(terms);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getStudentAssessmentTerms: RequestHandler = async (req, res, next) => {
+  try {
+    const studentId = Number(req.params.studentId);
+
+    if (Number.isNaN(studentId)) {
+      throw new AppError("studentId must be a number.");
+    }
+
+    const terms = await listStudentAssessmentTerms(studentId);
     res.json(terms);
   } catch (error) {
     next(error);

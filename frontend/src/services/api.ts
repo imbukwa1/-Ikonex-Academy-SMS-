@@ -140,6 +140,12 @@ export const resultsApi = {
     );
     return data;
   },
+  studentTerms: async (studentId: number) => {
+    const { data } = await apiClient.get<string[]>(
+      `/results/student/${studentId}/terms`
+    );
+    return data;
+  },
   classPerformance: async (streamId: number, term?: string) => {
     const { data } = await apiClient.get<ClassPerformanceResults>(
       `/results/class/${streamId}`,
